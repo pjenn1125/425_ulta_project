@@ -1,7 +1,7 @@
 # Author: Chandler Harris
 # Date: 10/18/2026
 # File: routes.py
-# Description:
+# Description: Defines the product API endpoints for retrieving all products and a specific product.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session

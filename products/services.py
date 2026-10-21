@@ -1,7 +1,7 @@
 # Author: Chandler Harris
 # Date: 10/18/2026
 # File: services.py
-# Description:
+# Description: Contains the functions used to retrieve product records from the database.
 
 from sqlmodel import Session, select
 from .models import Product

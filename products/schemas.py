@@ -1,7 +1,7 @@
 # Author: Chandler Harris
 # Date: 10/18/2026
 # File: schemas.py
-# Description:
+# Description: Defines the product data schemas used to validate and return API responses.
 
 from sqlmodel import SQLModel
 

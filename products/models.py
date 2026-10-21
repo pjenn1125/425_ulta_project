@@ -1,7 +1,7 @@
 # Author: Chandler Harris
 # Date: 10/18/2026
 # File: models.py
-# Description:
+# Description: Defines the Product database table and its fields.
 from typing import Optional
 from sqlmodel import SQLModel, Field
 

@@ -5,7 +5,7 @@
 
 from sqlmodel import SQLModel, Session, create_engine
 
-sqlite_file_name = "ulta.sqlite"
+sqlite_file_name = "ulta.sql"
 sqlite_url = "sqlite:///" + sqlite_file_name
 
 engine = create_engine(
