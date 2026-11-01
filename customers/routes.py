@@ -3,7 +3,6 @@
 # File: routes.py
 # Description: Defines the customer API endpoints for retrieving customers and their orders.
 
-
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -20,15 +19,12 @@ router = APIRouter(
     tags=["Customers"]
 )
 
-
 @router.get(
     "/",
     response_model=List[CustomerRead],
     summary="Get all customers"
 )
-def read_customers(
-    session: Session = Depends(get_session)
-):
+def read_customers(session: Session = Depends(get_session)):
     return get_all_customers(session)
 
 
@@ -37,10 +33,7 @@ def read_customers(
     response_model=CustomerRead,
     summary="Get a customer by ID"
 )
-def read_customer(
-    customer_id: int,
-    session: Session = Depends(get_session)
-):
+def read_customer(customer_id: int, session: Session = Depends(get_session)):
     customer = get_customer_by_id(session, customer_id)
 
     if customer is None:
@@ -51,18 +44,57 @@ def read_customer(
 
     return customer
 
-
-@router.get(
-    "/{customer_id}/orders",
-    response_model=List[OrderRead],
-    summary="Get orders for a customer"
+# ---------------------------------------------------------
+# CREATE CUSTOMER (Lab 3 - Added by Jennifer P.)
+# ---------------------------------------------------------
+@router.post(
+    "/",
+    response_model=CustomerRead,
+    status_code=201,
+    summary="Create a new customer"
 )
-def get_customer_orders(
+def create_customer_route(
+    customer: CustomerCreate,
+    session: Session = Depends(get_session)
+):
+    return create_customer(session, customer)
+
+
+# ---------------------------------------------------------
+# UPDATE CUSTOMER (Lab 3 - Added by Jennifer P.)
+# ---------------------------------------------------------
+@router.put(
+    "/{customer_id}",
+    response_model=CustomerRead,
+    summary="Update an existing customer"
+)
+def update_customer_route(
+    customer_id: int,
+    customer: CustomerUpdate,
+    session: Session = Depends(get_session)
+):
+    updated = update_customer(session, customer_id, customer)
+
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    return updated
+
+
+# DELETE CUSTOMER (Lab 3 - Added by Jennifer P.)
+
+@router.delete(
+    "/{customer_id}",
+    status_code=200,
+    summary="Delete a customer"
+)
+def delete_customer_route(
     customer_id: int,
     session: Session = Depends(get_session)
 ):
-    customer_orders = session.exec(
-        select(Order).where(Order.customer_id == customer_id)
-    ).all()
+    deleted = delete_customer(session, customer_id)
 
-    return customer_orders
+    if deleted is None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    return {"message": "Customer deleted"}
