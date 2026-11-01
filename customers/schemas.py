@@ -1,16 +1,46 @@
-# Author: Chandler Harris
+# Author: Chandler Harris, Jennifer P.
 # Date: 10/18/2026
 # File: schemas.py
-# Description: Defines the customer data schemas used to validate and return API responses.
+# Description: Defines the customer data schemas used to validate and return API responses
 
 from typing import Optional
-
 from sqlmodel import SQLModel
+from pydantic import Field, field_validator
 
 
-class CustomerRead(SQLModel):
+# BASE SCHEMA (shared fields)
+
+class CustomerBase(SQLModel):
+    first_name: str = Field(..., min_length=2, max_length=50)
+    last_name: str = Field(..., min_length=2, max_length=50)
+    email: str = Field(..., pattern=r".+@.+\..+")
+    phone: Optional[str] = Field(None, min_length=10, max_length=14)
+
+    # Custom validator
+    @field_validator("first_name", "last_name")
+    def only_letters(cls, value):
+        if not value.replace(" ", "").isalpha():
+            raise ValueError("Names must contain only letters")
+        return value
+
+
+# CREATE SCHEMA
+
+class CustomerCreate(CustomerBase):
+    pass
+
+
+
+# UPDATE SCHEMA
+
+class CustomerUpdate(SQLModel):
+    first_name: Optional[str] = Field(None, min_length=2, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=2, max_length=50)
+    email: Optional[str] = Field(None, pattern=r".+@.+\..+")
+    phone: Optional[str] = Field(None, min_length=10, max_length=14)
+
+
+# READ SCHEMA (returned to client)
+
+class CustomerRead(CustomerBase):
     customer_id: int
-    first_name: str
-    last_name: str
-    email: str
-    phone: Optional[str] = None
