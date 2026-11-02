@@ -4,57 +4,79 @@
 # Description: Defines the product API endpoints for retrieving all products,
 # pagination, sorting, and search functionality.
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session, select, or_
 from database import get_session
+from .models import Product
 from .schemas import ProductRead
-from .services import (
-    get_all_products,
-    get_product_by_id,
-    get_paginated_products,
-    search_products
-)
 
 router = APIRouter(
     prefix="/products",
     tags=["Products"]
 )
 
-# ---------------------------------------------------------
-# GET ALL PRODUCTS (Lab 2)
-# ---------------------------------------------------------
+# Get all products (Lab 2)
 @router.get(
     "/",
-    response_model=list[ProductRead],
+    response_model=List[ProductRead],
     summary="Get all products"
 )
 def read_products(session: Session = Depends(get_session)):
-    return get_all_products(session)
+    return session.exec(select(Product)).all()
 
-
-# PAGINATION + SORTING (Lab 3 - Added by Jennifer P.)
+# Pagination and sorting (Lab 3 - Resource A)
 @router.get(
     "/paginate",
-    response_model=list[ProductRead],
+    response_model=List[ProductRead],
     summary="Paginated and sorted products"
 )
 def paginate_products(
     session: Session = Depends(get_session),
     offset: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
-    sort: list[str] = Query(["price"])  # Example: ?sort=price&sort=-brand
+    sort: Optional[str] = Query(
+        None,
+        description="Comma-separated fields. Use '-' prefix for descending. Example: 'price,-brand'"
+    )
 ):
-    return get_paginated_products(session, offset, limit, sort)
+    query = select(Product)
+
+    # Sorting logic
+    if sort:
+        sort_fields = sort.split(",")
+        for field in sort_fields:
+            desc = field.startswith("-")
+            field_name = field[1:] if desc else field
+
+            if hasattr(Product, field_name):
+                column = getattr(Product, field_name)
+                query = query.order_by(column.desc() if desc else column)
+
+    # Pagination logic
+    query = query.offset(offset).limit(limit)
+
+    return session.exec(query).all()
 
 
-# SEARCH PRODUCTS (Lab 3 - Added by Jennifer P.
+# Search products (Lab 3 - Resource B)
 @router.get(
     "/search",
-    response_model=list[ProductRead],
+    response_model=List[ProductRead],
     summary="Search products by name, brand, or category"
 )
 def search_products_route(
-    q: str = Query(..., min_length=1),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    q: str = Query(..., min_length=1)
 ):
-    return search_products(session, q)
+    pattern = f"%{q}%"
+
+    query = select(Product).where(
+        or_(
+            Product.product_name.ilike(pattern),
+            Product.brand.ilike(pattern),
+            Product.category.ilike(pattern)
+        )
+    )
+
+    return session.exec(query).all()

@@ -6,18 +6,19 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from database import get_session
-from .schemas import CustomerRead
-from .services import get_all_customers, get_customer_by_id
-from orders.models import Order
-from orders.schemas import OrderRead
-
-router = APIRouter(
-    prefix="/customers",
-    tags=["Customers"]
+from .schemas import CustomerCreate, CustomerRead, CustomerUpdate
+from .services import (
+    create_customer,
+    delete_customer,
+    get_all_customers,
+    get_customer_by_id,
+    update_customer,
 )
+router = APIRouter(prefix="/customers", tags=["Customers"])
+
 
 @router.get(
     "/",
@@ -26,7 +27,6 @@ router = APIRouter(
 )
 def read_customers(session: Session = Depends(get_session)):
     return get_all_customers(session)
-
 
 @router.get(
     "/{customer_id}",
@@ -44,9 +44,8 @@ def read_customer(customer_id: int, session: Session = Depends(get_session)):
 
     return customer
 
-# ---------------------------------------------------------
+
 # CREATE CUSTOMER (Lab 3 - Added by Jennifer P.)
-# ---------------------------------------------------------
 @router.post(
     "/",
     response_model=CustomerRead,
@@ -59,10 +58,7 @@ def create_customer_route(
 ):
     return create_customer(session, customer)
 
-
-# ---------------------------------------------------------
 # UPDATE CUSTOMER (Lab 3 - Added by Jennifer P.)
-# ---------------------------------------------------------
 @router.put(
     "/{customer_id}",
     response_model=CustomerRead,
@@ -82,7 +78,6 @@ def update_customer_route(
 
 
 # DELETE CUSTOMER (Lab 3 - Added by Jennifer P.)
-
 @router.delete(
     "/{customer_id}",
     status_code=200,
