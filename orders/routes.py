@@ -17,7 +17,6 @@ router = APIRouter(
     tags=["Orders"]
 )
 
-
 @router.get(
     "/",
     response_model=List[OrderRead],
@@ -68,4 +67,3 @@ def get_order_items(
     ).all()
 
     return order_items
-

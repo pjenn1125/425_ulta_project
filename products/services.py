@@ -4,6 +4,7 @@
 # Description: Contains the functions used to retrieve product records from the database.
 
 from sqlmodel import Session, select
+
 from .models import Product
 from .schemas import ProductUpdate, ProductCreate
 

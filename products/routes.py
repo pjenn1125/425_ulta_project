@@ -1,10 +1,12 @@
-# Author: Chandler Harris
+# Author: Chandler Harris, Jennifer P.
 # Date: 10/18/2026
 # File: routes.py
-# Description: Defines the product API endpoints for retrieving all products and a specific product.
+# Description: Defines the product API endpoints for retrieving all products,
+# pagination, sorting, and search functionality.
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session, select, or_
 from database import get_session
 from .schemas import ProductRead, ProductCreate, ProductUpdate
 from .services import (get_all_products,
@@ -18,7 +20,7 @@ router = APIRouter(
     tags=["Products"]
 )
 
-
+# Get all products (Lab 2)
 @router.get(
     "/",
     response_model=list[ProductRead],
@@ -29,6 +31,7 @@ def read_products(
     return get_all_products(session)
 
 
+# Search products (Lab 3 - Resource B)
 @router.get(
     "/{product_id}",
     response_model=ProductRead,
