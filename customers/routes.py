@@ -76,7 +76,6 @@ def update_customer_route(
 
     return updated
 
-
 # DELETE CUSTOMER (Lab 3 - Added by Jennifer P.)
 @router.delete(
     "/{customer_id}",
