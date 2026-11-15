@@ -8,8 +8,12 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select, or_
 from database import get_session
-from .models import Product
-from .schemas import ProductRead
+from .schemas import ProductRead, ProductCreate, ProductUpdate
+from .services import (get_all_products,
+                       get_product_by_id,
+                       create_product,
+                       update_product,
+                       delete_product)
 
 router = APIRouter(
     prefix="/products",
@@ -19,64 +23,81 @@ router = APIRouter(
 # Get all products (Lab 2)
 @router.get(
     "/",
-    response_model=List[ProductRead],
-    summary="Get all products"
-)
-def read_products(session: Session = Depends(get_session)):
-    return session.exec(select(Product)).all()
+    response_model=list[ProductRead],
+    summary="Get all products")
 
-# Pagination and sorting (Lab 3 - Resource A)
-@router.get(
-    "/paginate",
-    response_model=List[ProductRead],
-    summary="Paginated and sorted products"
-)
-def paginate_products(
-    session: Session = Depends(get_session),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(10, ge=1, le=100),
-    sort: Optional[str] = Query(
-        None,
-        description="Comma-separated fields. Use '-' prefix for descending. Example: 'price,-brand'"
-    )
-):
-    query = select(Product)
-
-    # Sorting logic
-    if sort:
-        sort_fields = sort.split(",")
-        for field in sort_fields:
-            desc = field.startswith("-")
-            field_name = field[1:] if desc else field
-
-            if hasattr(Product, field_name):
-                column = getattr(Product, field_name)
-                query = query.order_by(column.desc() if desc else column)
-
-    # Pagination logic
-    query = query.offset(offset).limit(limit)
-
-    return session.exec(query).all()
+def read_products(
+    session: Session = Depends(get_session)):
+    return get_all_products(session)
 
 
 # Search products (Lab 3 - Resource B)
 @router.get(
-    "/search",
-    response_model=List[ProductRead],
-    summary="Search products by name, brand, or category"
-)
-def search_products_route(
-    session: Session = Depends(get_session),
-    q: str = Query(..., min_length=1)
-):
-    pattern = f"%{q}%"
+    "/{product_id}",
+    response_model=ProductRead,
+    summary="Get a product by ID")
 
-    query = select(Product).where(
-        or_(
-            Product.product_name.ilike(pattern),
-            Product.brand.ilike(pattern),
-            Product.category.ilike(pattern)
-        )
-    )
+def read_product(
+    product_id: int,
+    session: Session = Depends(get_session)):
 
-    return session.exec(query).all()
+    product = get_product_by_id(session, product_id)
+
+    #check if the product exists
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found")
+
+    return product
+
+#create products
+@router.post(
+    "/",
+    response_model=ProductRead,
+    status_code=201,
+    summary="Create a new product")
+
+def create_product_route(
+        product_data: ProductCreate,
+        session: Session = Depends(get_session)):
+
+        return create_product(session, product_data)
+
+#update products
+@router.put(
+    "/{product_id}",
+    response_model=ProductRead,
+    summary="Update a product")
+
+def update_product_route(
+        product_id: int,
+        product_data: ProductUpdate,
+        session: Session = Depends(get_session)):
+
+        updated_product= update_product(session, product_id, product_data)
+
+        if updated_product is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found")
+        return updated_product
+
+#delete product
+@router.delete(
+    "/{product_id}",
+    status_code=200,
+    summary="Delete a product")
+
+def delete_product_route(
+        product_id: int,
+        session: Session = Depends(get_session)):
+
+        deleted_product= delete_product(session, product_id)
+
+        # checks if the product exists
+        if deleted_product is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found")
+        return {'message': 'Product deleted'}

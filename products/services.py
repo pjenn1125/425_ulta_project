@@ -6,52 +6,55 @@
 from sqlmodel import Session, select
 
 from .models import Product
+from .schemas import ProductUpdate, ProductCreate
 
-
+#retrieve all product records from the database
 def get_all_products(session: Session):
     statement = select(Product)
     products = session.exec(statement).all()
     return products
 
-
+#get product by id
 def get_product_by_id(session: Session, product_id: int):
     product = session.get(Product, product_id)
     return product
 
+#create the products
+def create_product(session: Session, product_data: ProductCreate):
+    product = Product(**product_data.model_dump())
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    return product
 
-def get_paginated_products(
-    session: Session,
-    offset: int,
-    limit: int,
-    sort: list[str],
-):
-    sort_fields = {
-        "product_id": Product.product_id,
-        "product_name": Product.product_name,
-        "brand": Product.brand,
-        "price": Product.price,
-        "category": Product.category,
-    }
-    statement = select(Product)
+#updates an existing product using its product id
+def update_product(session: Session, product_id: int, product_data: ProductUpdate):
+    product = session.get(Product, product_id)
 
-    for sort_option in sort:
-        descending = sort_option.startswith("-")
-        field_name = sort_option[1:] if descending else sort_option
-        field = sort_fields.get(field_name)
-        if field is None:
-            raise ValueError(f"Unsupported sort field: {field_name}")
-        statement = statement.order_by(
-            field.desc() if descending else field.asc()
-        )
+    #checks if the product exists
+    if product is None:
+        return None
 
-    return session.exec(statement.offset(offset).limit(limit)).all()
+    product_data_dict = product_data.model_dump(exclude_unset=True)
 
+    for key, value in product_data_dict.items():
+        setattr(product, key, value)
 
-def search_products(session: Session, query: str):
-    search_term = f"%{query.strip()}%"
-    statement = select(Product).where(
-        Product.product_name.ilike(search_term)
-        | Product.brand.ilike(search_term)
-        | Product.category.ilike(search_term)
-    )
-    return session.exec(statement).all()
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    return product
+
+#removes an existing product from the database
+def delete_product(session: Session, product_id: int):
+    product = session.get(Product, product_id)
+
+    if product is None:
+        return None
+
+    #delete the product from the database session
+    session.delete(product)
+
+    #save the deletion to the database
+    session.commit()
+    return product

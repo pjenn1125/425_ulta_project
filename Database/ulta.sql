@@ -110,3 +110,31 @@ VALUES
 (3, 3, 5, 2, 14.99),
 (4, 4, 4, 1, 36.00),
 (5, 5, 2, 3, 22.99);
+
+-- Create table for Roles
+CREATE TABLE roles (
+    role_id INTEGER PRIMARY KEY ,
+    role_name TEXT NOT NULL UNIQUE ,
+    description TEXT
+);
+
+-- Create table for Users
+CREATE TABLE users(
+    user_id INTEGER PRIMARY KEY ,
+    username VARCHAR(50) NOT NULL UNIQUE ,
+    email VARCHAR(100) NOT NULL UNIQUE ,
+    hashed_pw VARCHAR(255) NOT NULL ,
+    role_id INTEGER NOT NULL,
+    FOREIGN KEY (role_id)
+        REFERENCES roles(role_id)
+);
+
+
+-- Sample data for roles
+INSERT INTO roles(role_id, role_name, description)
+VALUES
+(1,'Admin','Full system access'),
+(2,'Manager','Manages products, inventory, and orders'),
+(3,'Employee','Views products, inventory, and orders');
+
+-- Sample data for users
