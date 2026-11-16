@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+# Author: Chandler Harris
+# Date: 11/15/2026
+# File: schemas.py
+# Description:
+from users.schemas import UserCreate
 
-class LoginRequest(BaseModel):
-        username: str
-        password: str
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-    username: dict
+#info required to register a new user
+class RegisterRequest(UserCreate):
+    pass
