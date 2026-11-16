@@ -1,4 +1,4 @@
-
+from users.routes import router as users_router
 from fastapi import FastAPI
 from database import create_db_and_tables
 from products.routes import router as product_router
@@ -32,3 +32,4 @@ app.include_router(order_router)
 app.include_router(inventory_router)
 app.include_router(order_item_router)
 app.include_router(auth_router)
+app.include_router(users_router)

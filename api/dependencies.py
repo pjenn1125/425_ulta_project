@@ -10,8 +10,6 @@ from sqlmodel import Session
 from auth.services import decode_access_token
 from database import get_session
 from users.models import User
-
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
