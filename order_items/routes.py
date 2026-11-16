@@ -4,10 +4,8 @@
 # Description: Defines the order item API endpoints for retrieving all order items and a specific item.
 
 from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
-
 from api.dependencies import get_current_user
 from database import get_session
 from .schemas import OrderItemRead

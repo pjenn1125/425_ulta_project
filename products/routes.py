@@ -7,7 +7,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, or_
-from api.dependencies import get_current_user
+from api.dependencies import get_current_user, require_role
 from database import get_session
 from .schemas import ProductRead, ProductCreate, ProductUpdate
 from .services import (get_all_products,
@@ -58,7 +58,9 @@ def read_product(
     "/",
     response_model=ProductRead,
     status_code=201,
-    summary="Create a new product")
+    summary="Create a new product",
+    dependencies=[Depends(require_role(1,2))], #added dependencies
+)
 
 def create_product_route(
         product_data: ProductCreate,
@@ -70,7 +72,9 @@ def create_product_route(
 @router.put(
     "/{product_id}",
     response_model=ProductRead,
-    summary="Update a product")
+    summary="Update a product",
+    dependencies=[Depends(require_role(1, 2))]
+)
 
 def update_product_route(
         product_id: int,
@@ -89,7 +93,9 @@ def update_product_route(
 @router.delete(
     "/{product_id}",
     status_code=200,
-    summary="Delete a product")
+    summary="Delete a product",
+    dependencies=[Depends(require_role(1, 2))]
+)
 
 def delete_product_route(
         product_id: int,

@@ -1,5 +1,6 @@
 #added by jennifer p (lab4): Implements OAuth2PasswordBearer token auht, JWT validation
 #and current user retrieval for securing protected API endpoints
+#added RBAC function - chandler h
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -35,3 +36,14 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+#check whether a user has the required role
+def require_role(*allowed_roles: int):
+    def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role_id not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to access this resource")
+        return current_user
+
+    return role_checker

@@ -4,11 +4,9 @@
 # Description: Defines the inventory API endpoints for retrieving inventory records and product inventory.
 
 from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-
-from api.dependencies import get_current_user
+from api.dependencies import get_current_user, require_role
 from database import get_session
 from .schemas import InventoryRead
 from .services import get_all_inventory, get_inventory_by_id
@@ -23,7 +21,8 @@ router = APIRouter(
 @router.get(
     "/",
     response_model=List[InventoryRead],
-    summary="Get all inventory records"
+    summary="Get all inventory records",
+    dependencies=[Depends(require_role(1, 2, 3))]
 )
 def read_inventory(
     session: Session = Depends(get_session)
@@ -34,7 +33,8 @@ def read_inventory(
 @router.get(
     "/{inventory_id}",
     response_model=InventoryRead,
-    summary="Get an inventory record by ID"
+    summary="Get an inventory record by ID",
+    dependencies=[Depends(require_role(1, 2, 3))]
 )
 def read_inventory_record(
     inventory_id: int,
@@ -56,10 +56,15 @@ from inventory.models import Inventory
 from inventory.schemas import InventoryRead
 
 
-@router.get("/{product_id}/inventory", response_model=InventoryRead, summary="Get inventory for a product")
+@router.get("/{product_id}/inventory",
+            response_model=InventoryRead,
+            summary="Get inventory for a product",
+            dependencies=[Depends(require_role(1, 2, 3))]
+            )
+
 def get_product_inventory(
     product_id: int,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ):
     inventory = session.exec(
         select(Inventory).where(Inventory.product_id == product_id)

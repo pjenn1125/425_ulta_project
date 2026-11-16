@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from api.dependencies import get_current_user
+from api.dependencies import get_current_user, require_role
 from database import get_session
 from users.models import User
 from users.schemas import UserRead, UserUpdate
@@ -19,14 +19,18 @@ router = APIRouter(
 
 
 #get all users
-@router.get("/", response_model=list[UserRead])
+@router.get("/",
+            response_model=list[UserRead],
+            dependencies=[Depends(require_role(1))])
 def get_users(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     return users
 
 
 #get one user
-@router.get("/{user_id}", response_model=UserRead)
+@router.get("/{user_id}",
+            response_model=UserRead,
+            dependencies=[Depends(require_role(1))])
 def get_user(user_id: int, session: Session = Depends(get_session)):
     user = session.get(User, user_id)
 
@@ -37,7 +41,9 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
 
 
 #update a user
-@router.put("/{user_id}", response_model=UserRead)
+@router.put("/{user_id}",
+            response_model=UserRead,
+            dependencies=[Depends(require_role(1))])
 def update_user(
     user_id: int,
     user_data: UserUpdate,
@@ -61,8 +67,14 @@ def update_user(
 
 
 #delete a user
-@router.delete("/{user_id}")
-def delete_user(user_id: int, session: Session = Depends(get_session)):
+@router.delete(
+    "/{user_id}",
+    dependencies=[Depends(require_role(1))]
+)
+def delete_user(
+    user_id: int,
+    session: Session = Depends(get_session)
+):
     user = session.get(User, user_id)
 
     if not user:
