@@ -2,9 +2,20 @@
 # Date: 11/15/2026
 # File: schemas.py
 # Description:
-from users.schemas import UserCreate
 
+
+from users.schemas import UserCreate, UserRead
+from sqlmodel import SQLModel
 
 #info required to register a new user
 class RegisterRequest(UserCreate):
     pass
+#login and JWT response schemas added by Jennifer P.
+class LoginRequest(SQLModel):
+    username: str
+    password: str
+
+class TokenResponse(SQLModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserRead

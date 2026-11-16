@@ -8,6 +8,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from api.dependencies import get_current_user
 from database import get_session
 from .schemas import CustomerCreate, CustomerRead, CustomerUpdate
 from .services import (
@@ -17,7 +18,11 @@ from .services import (
     get_customer_by_id,
     update_customer,
 )
-router = APIRouter(prefix="/customers", tags=["Customers"])
+router = APIRouter(
+    prefix="/customers",
+    tags=["Customers"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.get(

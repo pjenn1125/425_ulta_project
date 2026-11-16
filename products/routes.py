@@ -5,8 +5,9 @@
 # pagination, sorting, and search functionality.
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, or_
+from api.dependencies import get_current_user
 from database import get_session
 from .schemas import ProductRead, ProductCreate, ProductUpdate
 from .services import (get_all_products,
@@ -17,7 +18,8 @@ from .services import (get_all_products,
 
 router = APIRouter(
     prefix="/products",
-    tags=["Products"]
+    tags=["Products"],
+    dependencies=[Depends(get_current_user)],
 )
 
 # Get all products (Lab 2)

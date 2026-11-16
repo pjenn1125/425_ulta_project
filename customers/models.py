@@ -9,6 +9,8 @@ from sqlmodel import SQLModel, Field
 
 
 class Customer(SQLModel, table=True):
+    __tablename__ = "customers"
+
     customer_id: Optional[int] = Field(
         default=None,
         primary_key=True
@@ -17,4 +19,3 @@ class Customer(SQLModel, table=True):
     last_name: str
     email: str
     phone: Optional[str] = None
-

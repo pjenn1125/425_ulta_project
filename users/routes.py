@@ -5,6 +5,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from api.dependencies import get_current_user
 from database import get_session
 from users.models import User
 from users.schemas import UserRead, UserUpdate
@@ -12,7 +13,8 @@ from users.schemas import UserRead, UserUpdate
 
 router = APIRouter(
     prefix="/users",
-    tags=["Users"]
+    tags=["Users"],
+    dependencies=[Depends(get_current_user)],
 )
 
 
