@@ -2,6 +2,10 @@
 # Date: 11/15/2026
 # File: services.py
 # Description: auth/services will handle the registration process
+
+#added by jennifer p. : implement user auth, JWT token ceration and validaiton ,
+#enviroment based security cofig ,and login processing
+#
 from sqlmodel import Session, select
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
