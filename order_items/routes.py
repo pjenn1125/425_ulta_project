@@ -8,13 +8,15 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from api.dependencies import get_current_user
 from database import get_session
 from .schemas import OrderItemRead
 from .services import get_all_order_items, get_order_item_by_id
 
 router = APIRouter(
     prefix="/order-items",
-    tags=["Order Items"]
+    tags=["Order Items"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

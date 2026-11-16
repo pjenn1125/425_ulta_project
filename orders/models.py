@@ -10,10 +10,12 @@ from sqlmodel import SQLModel, Field
 
 
 class Order(SQLModel, table=True):
+    __tablename__ = "orders"
+
     order_id: Optional[int] = Field(
         default=None,
         primary_key=True
     )
-    customer_id: int = Field(foreign_key="customer.customer_id")
+    customer_id: int = Field(foreign_key="customers.customer_id")
     order_date: date
     status: str
