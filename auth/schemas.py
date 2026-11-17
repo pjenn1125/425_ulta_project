@@ -4,12 +4,16 @@
 # Description:
 
 
-from users.schemas import UserCreate, UserRead
+from users.schemas import UserRead
 from sqlmodel import SQLModel
 
-#info required to register a new user
-class RegisterRequest(UserCreate):
-    pass
+
+class RegisterRequest(SQLModel):
+    username: str
+    email: str
+    password: str
+
+
 #login and JWT response schemas added by Jennifer P.
 class LoginRequest(SQLModel):
     username: str

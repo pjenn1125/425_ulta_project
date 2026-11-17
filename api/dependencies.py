@@ -1,6 +1,7 @@
-#added by jennifer p (lab4): Implements OAuth2PasswordBearer token auht, JWT validation
-#and current user retrieval for securing protected API endpoints
+# OAuth2 bearer authentication and current-user lookup by Jennifer P.
 #added RBAC function - chandler h
+
+from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -35,13 +36,20 @@ def get_current_user(
 
     return user
 
-#check whether a user has the required role
-def require_role(*allowed_roles: int):
-    def role_checker(current_user: User = Depends(get_current_user)):
+def role_required(*allowed_roles: int) -> Callable[..., User]:
+    def role_checker(
+        current_user: Annotated[User, Depends(get_current_user)],
+    ) -> User:
         if current_user.role_id not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to access this resource")
+                detail="You do not have permission to access this resource",
+            )
         return current_user
 
     return role_checker
+
+
+AdminDep = Annotated[User, Depends(role_required(1))]
+ManagerDep = Annotated[User, Depends(role_required(1, 2))]
+EmployeeDep = Annotated[User, Depends(role_required(1, 2, 3))]

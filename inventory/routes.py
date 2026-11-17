@@ -6,7 +6,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from api.dependencies import get_current_user, require_role
+from api.dependencies import EmployeeDep, get_current_user
 from database import get_session
 from .schemas import InventoryRead
 from .services import get_all_inventory, get_inventory_by_id
@@ -22,9 +22,9 @@ router = APIRouter(
     "/",
     response_model=List[InventoryRead],
     summary="Get all inventory records",
-    dependencies=[Depends(require_role(1, 2, 3))]
 )
 def read_inventory(
+    _current_user: EmployeeDep,
     session: Session = Depends(get_session)
 ):
     return get_all_inventory(session)
@@ -34,10 +34,10 @@ def read_inventory(
     "/{inventory_id}",
     response_model=InventoryRead,
     summary="Get an inventory record by ID",
-    dependencies=[Depends(require_role(1, 2, 3))]
 )
 def read_inventory_record(
     inventory_id: int,
+    _current_user: EmployeeDep,
     session: Session = Depends(get_session)
 ):
     inventory = get_inventory_by_id(session, inventory_id)
@@ -59,11 +59,11 @@ from inventory.schemas import InventoryRead
 @router.get("/{product_id}/inventory",
             response_model=InventoryRead,
             summary="Get inventory for a product",
-            dependencies=[Depends(require_role(1, 2, 3))]
             )
 
 def get_product_inventory(
     product_id: int,
+    _current_user: EmployeeDep,
     session: Session = Depends(get_session),
 ):
     inventory = session.exec(

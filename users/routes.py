@@ -5,7 +5,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from api.dependencies import get_current_user, require_role
+from api.dependencies import AdminDep, get_current_user
 from database import get_session
 from users.models import User
 from users.schemas import UserRead, UserUpdate
@@ -20,18 +20,23 @@ router = APIRouter(
 
 #get all users
 @router.get("/",
-            response_model=list[UserRead],
-            dependencies=[Depends(require_role(1))])
-def get_users(session: Session = Depends(get_session)):
+            response_model=list[UserRead])
+def get_users(
+    _current_user: AdminDep,
+    session: Session = Depends(get_session),
+):
     users = session.exec(select(User)).all()
     return users
 
 
 #get one user
 @router.get("/{user_id}",
-            response_model=UserRead,
-            dependencies=[Depends(require_role(1))])
-def get_user(user_id: int, session: Session = Depends(get_session)):
+            response_model=UserRead)
+def get_user(
+    user_id: int,
+    _current_user: AdminDep,
+    session: Session = Depends(get_session),
+):
     user = session.get(User, user_id)
 
     if not user:
@@ -42,12 +47,12 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
 
 #update a user
 @router.put("/{user_id}",
-            response_model=UserRead,
-            dependencies=[Depends(require_role(1))])
+            response_model=UserRead)
 def update_user(
     user_id: int,
     user_data: UserUpdate,
-    session: Session = Depends(get_session)
+    _current_user: AdminDep,
+    session: Session = Depends(get_session),
 ):
     user = session.get(User, user_id)
 
@@ -68,12 +73,12 @@ def update_user(
 
 #delete a user
 @router.delete(
-    "/{user_id}",
-    dependencies=[Depends(require_role(1))]
+    "/{user_id}"
 )
 def delete_user(
     user_id: int,
-    session: Session = Depends(get_session)
+    _current_user: AdminDep,
+    session: Session = Depends(get_session),
 ):
     user = session.get(User, user_id)
 

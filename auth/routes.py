@@ -33,6 +33,7 @@ def login(
     return login_user(session, user_data)
 
 
+#demonstrates endpoint-level authentication protection (Jennifer P.).
 @router.get("/me", response_model=UserRead)
 def read_current_user(current_user: UserRead = Depends(get_current_user)):
     return current_user

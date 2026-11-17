@@ -7,7 +7,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, or_
-from api.dependencies import get_current_user, require_role
+from api.dependencies import EmployeeDep, ManagerDep, get_current_user
 from database import get_session
 from .schemas import ProductRead, ProductCreate, ProductUpdate
 from .services import (get_all_products,
@@ -16,6 +16,7 @@ from .services import (get_all_products,
                        update_product,
                        delete_product)
 
+# Member 2: Demonstrates router-level authentication protection (Jennifer P.).
 router = APIRouter(
     prefix="/products",
     tags=["Products"],
@@ -29,7 +30,9 @@ router = APIRouter(
     summary="Get all products")
 
 def read_products(
-    session: Session = Depends(get_session)):
+    _current_user: EmployeeDep,
+    session: Session = Depends(get_session),
+):
     return get_all_products(session)
 
 
@@ -59,11 +62,11 @@ def read_product(
     response_model=ProductRead,
     status_code=201,
     summary="Create a new product",
-    dependencies=[Depends(require_role(1,2))], #added dependencies
 )
 
 def create_product_route(
         product_data: ProductCreate,
+        _current_user: ManagerDep,
         session: Session = Depends(get_session)):
 
         return create_product(session, product_data)
@@ -73,12 +76,12 @@ def create_product_route(
     "/{product_id}",
     response_model=ProductRead,
     summary="Update a product",
-    dependencies=[Depends(require_role(1, 2))]
 )
 
 def update_product_route(
         product_id: int,
         product_data: ProductUpdate,
+        _current_user: ManagerDep,
         session: Session = Depends(get_session)):
 
         updated_product= update_product(session, product_id, product_data)
@@ -94,11 +97,11 @@ def update_product_route(
     "/{product_id}",
     status_code=200,
     summary="Delete a product",
-    dependencies=[Depends(require_role(1, 2))]
 )
 
 def delete_product_route(
         product_id: int,
+        _current_user: ManagerDep,
         session: Session = Depends(get_session)):
 
         deleted_product= delete_product(session, product_id)

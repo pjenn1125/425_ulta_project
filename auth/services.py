@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 import os
 
 from users.models import User, Role
-from users.schemas import UserRead
+from users.schemas import UserCreate, UserRead
 from users.services import create_user
 from users.services import password_hash
 from auth.schemas import LoginRequest, RegisterRequest, TokenResponse
@@ -40,6 +40,7 @@ def _jwt_settings() -> tuple[str, str, int]:
     return secret_key, algorithm, expiration
 
 
+# JWT issuance with the required claims implemented by Jennifer P.
 def create_access_token(user: User) -> str:
     if user.user_id is None:
         raise RuntimeError("Cannot issue a token for a user without an ID")
@@ -90,18 +91,24 @@ def register_user(session: Session, user_data: RegisterRequest):
             status_code=400,
             detail="Email already exists")
 
-    #check if the role exists
-    existing_role = session.get(Role, user_data.role_id)
+    employee_role = session.exec(
+        select(Role).where(Role.role_name == "Employee")
+    ).first()
+    if employee_role is None or employee_role.role_id is None:
+        raise RuntimeError("Employee role is not configured")
 
-    if not existing_role:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid role ID")
+    return create_user(
+        session,
+        UserCreate(
+            username=user_data.username,
+            email=user_data.email,
+            password=user_data.password,
+            role_id=employee_role.role_id,
+        ),
+    )
 
-    #create user and hash password
-    return create_user(session, user_data)
 
-
+# Member 2: Password verification and login implemented by Jennifer P.
 def login_user(session: Session, user_data: LoginRequest) -> TokenResponse:
     user = session.exec(
         select(User).where(User.username == user_data.username)

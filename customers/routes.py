@@ -8,7 +8,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
-from api.dependencies import get_current_user
+from api.dependencies import EmployeeDep, ManagerDep, get_current_user
 from database import get_session
 from .schemas import CustomerCreate, CustomerRead, CustomerUpdate
 from .services import (
@@ -30,7 +30,10 @@ router = APIRouter(
     response_model=List[CustomerRead],
     summary="Get all customers"
 )
-def read_customers(session: Session = Depends(get_session)):
+def read_customers(
+    _current_user: EmployeeDep,
+    session: Session = Depends(get_session),
+):
     return get_all_customers(session)
 
 @router.get(
@@ -59,7 +62,8 @@ def read_customer(customer_id: int, session: Session = Depends(get_session)):
 )
 def create_customer_route(
     customer: CustomerCreate,
-    session: Session = Depends(get_session)
+    _current_user: ManagerDep,
+    session: Session = Depends(get_session),
 ):
     return create_customer(session, customer)
 
@@ -72,7 +76,8 @@ def create_customer_route(
 def update_customer_route(
     customer_id: int,
     customer: CustomerUpdate,
-    session: Session = Depends(get_session)
+    _current_user: ManagerDep,
+    session: Session = Depends(get_session),
 ):
     updated = update_customer(session, customer_id, customer)
 
@@ -89,7 +94,8 @@ def update_customer_route(
 )
 def delete_customer_route(
     customer_id: int,
-    session: Session = Depends(get_session)
+    _current_user: ManagerDep,
+    session: Session = Depends(get_session),
 ):
     deleted = delete_customer(session, customer_id)
 
